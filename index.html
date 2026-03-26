@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>XEQT vs XGRO vs XBAL — Compounding Calculator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0f0f1a; font-family: -apple-system, sans-serif; color: #f0f0f0; min-height: 100vh; padding: 32px 16px; }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    .badge { text-align: center; font-size: 11px; color: #6366f1; font-weight: 700; letter-spacing: 2px; margin-bottom: 10px; }
+    h1 { text-align: center; font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+    .sub { text-align: center; font-size: 14px; color: #888; margin-bottom: 28px; }
+    .controls { background: #1a1a2e; border-radius: 14px; padding: 20px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    label { display: block; font-size: 11px; color: #888; font-weight: 700; letter-spacing: 1px; margin-bottom: 6px; }
+    select { width: 100%; background: #0f0f1a; color: #fff; border: 1px solid #333; border-radius: 8px; padding: 10px 12px; font-size: 14px; cursor: pointer; }
+    .cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .card { background: #1a1a2e; border-radius: 14px; padding: 18px 12px; text-align: center; border: 1px solid transparent; }
+    .card.xeqt { border-color: #6366f133; } .card.xgro { border-color: #22c55e33; } .card.xbal { border-color: #f59e0b33; }
+    .card-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; margin-bottom: 3px; }
+    .card-desc { font-size: 10px; color: #555; margin-bottom: 12px; }
+    .card-value { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .card-gain { font-size: 12px; color: #22c55e; }
+    .card-pct { font-size: 10px; color: #444; margin-top: 3px; }
+    .xeqt .card-label { color: #6366f1; } .xgro .card-label { color: #22c55e; } .xbal .card-label { color: #f59e0b; }
+    .chart-box { background: #1a1a2e; border-radius: 14px; padding: 20px 12px 12px; margin-bottom: 20px; }
+    .chart-title { text-align: center; font-size: 12px; color: #888; margin-bottom: 16px; }
+    canvas { display: block; }
+    .legend { display: flex; justify-content: center; gap: 20px; margin-top: 12px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #aaa; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .section { background: #1a1a2e; border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+    .section-title { font-size: 12px; color: #888; margin-bottom: 14px; }
+    .gap-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #12122a; border-radius: 10px; margin-bottom: 10px; border: 1px solid transparent; }
+    .gap-label { font-size: 13px; color: #888; }
+    .gap-value { font-size: 20px; font-weight: 700; }
+    .brow { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .blabel { font-size: 13px; color: #555; }
+    .bvalue { font-size: 13px; color: #fff; font-weight: 600; }
+    .bgreen { color: #22c55e; }
+    .takeaway { background: #12122a; border: 1px solid #6366f133; border-radius: 14px; padding: 18px 20px; margin-bottom: 24px; }
+    .takeaway-title { font-size: 12px; color: #6366f1; font-weight: 700; margin-bottom: 8px; }
+    .takeaway-text { font-size: 13px; color: #ccc; line-height: 1.8; }
+    .footer { text-align: center; font-size: 11px; color: #333; margin-top: 4px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="badge">FREE TOOL FROM THE CHANNEL 🍁</div>
+  <h1>XEQT vs XGRO vs XBAL</h1>
+  <p class="sub">See exactly how much the ETF choice affects your compounding</p>
+  <div class="controls">
+
+    <div><label>STARTING AMOUNT</label>
+      <select id="initial" onchange="update()">
+        <option value="0">$0</option><option value="1000">$1,000</option><option value="5000">$5,000</option>
+        <option value="10000" selected>$10,000</option><option value="25000">$25,000</option><option value="50000">$50,000</option>
+      </select></div>
+    <div><label>MONTHLY CONTRIBUTION</label>
+      <select id="monthly" onchange="update()">
+        <option value="200">$200/month</option><option value="500">$500/month</option>
+        <option value="1000" selected>$1,000/month</option><option value="1500">$1,500/month</option>
+        <option value="2000">$2,000/month</option><option value="3000">$3,000/month</option>
+      </select></div>
+    <div><label>TIME HORIZON</label>
+      <select id="years" onchange="update()">
+        <option value="1">1 year</option><option value="2">2 years</option><option value="3">3 years</option><option value="4">4 years</option><option value="5">5 years</option><option value="6">6 years</option><option value="7">7 years</option><option value="8">8 years</option><option value="9">9 years</option><option value="10">10 years</option><option value="11">11 years</option><option value="12">12 years</option><option value="13">13 years</option><option value="14">14 years</option><option value="15">15 years</option><option value="16">16 years</option><option value="17">17 years</option><option value="18">18 years</option><option value="19">19 years</option><option value="20" selected>20 years</option><option value="21">21 years</option><option value="22">22 years</option><option value="23">23 years</option><option value="24">24 years</option><option value="25">25 years</option><option value="26">26 years</option><option value="27">27 years</option><option value="28">28 years</option><option value="29">29 years</option><option value="30">30 years</option><option value="31">31 years</option><option value="32">32 years</option><option value="33">33 years</option><option value="34">34 years</option><option value="35">35 years</option><option value="36">36 years</option><option value="37">37 years</option><option value="38">38 years</option><option value="39">39 years</option><option value="40">40 years</option>
+      </select></div>
+  </div>
+  <div class="cards">
+    <div class="card xeqt"><div class="card-label">XEQT</div><div class="card-desc">100% Stocks · ~8%/yr</div>
+      <div class="card-value" id="val-xeqt"></div><div class="card-gain" id="gain-xeqt"></div><div class="card-pct" id="pct-xeqt"></div></div>
+    <div class="card xgro"><div class="card-label">XGRO</div><div class="card-desc">80/20 · ~7%/yr</div>
+      <div class="card-value" id="val-xgro"></div><div class="card-gain" id="gain-xgro"></div><div class="card-pct" id="pct-xgro"></div></div>
+    <div class="card xbal"><div class="card-label">XBAL</div><div class="card-desc">60/40 · ~6%/yr</div>
+      <div class="card-value" id="val-xbal"></div><div class="card-gain" id="gain-xbal"></div><div class="card-pct" id="pct-xbal"></div></div>
+  </div>
+  <div class="chart-box">
+    <div class="chart-title" id="chart-title">Portfolio Growth Over Time</div>
+    <canvas id="chart"></canvas>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div>XEQT</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>XGRO</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>XBAL</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">💸 The Compounding Gap</div>
+    <div class="gap-row" style="border-color:#6366f133">
+      <span class="gap-label">XEQT vs XGRO difference</span>
+      <span class="gap-value" style="color:#6366f1" id="gap-xgro"></span>
+    </div>
+    <div class="gap-row" style="border-color:#f59e0b33;margin-bottom:0">
+      <span class="gap-label">XEQT vs XBAL difference</span>
+      <span class="gap-value" style="color:#f59e0b" id="gap-xbal"></span>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">📊 What You Put In vs What the Market Added</div>
+    <div class="brow"><span class="blabel">Total you contributed</span><span class="bvalue" id="contributed"></span></div>
+    <div class="brow"><span style="font-size:13px;color:#6366f1">XEQT market gain</span><span class="bvalue bgreen" id="mg-xeqt"></span></div>
+    <div class="brow"><span style="font-size:13px;color:#22c55e">XGRO market gain</span><span class="bvalue bgreen" id="mg-xgro"></span></div>
+    <div class="brow"><span style="font-size:13px;color:#f59e0b">XBAL market gain</span><span class="bvalue bgreen" id="mg-xbal"></span></div>
+  </div>
+  <div class="takeaway">
+    <div class="takeaway-title">💡 THE BOTTOM LINE</div>
+    <div class="takeaway-text" id="takeaway"></div>
+  </div>
+  <p class="footer">Based on historical avg returns: XEQT ~8%/yr · XGRO ~7%/yr · XBAL ~6%/yr</p>
+  <p class="footer" style="margin-top:4px">Not financial advice · Actual returns vary · For educational purposes only 🍁</p>
+</div>
+<script>
+const RATES={xeqt:0.08,xgro:0.07,xbal:0.06};
+const COLORS={xeqt:'#6366f1',xgro:'#22c55e',xbal:'#f59e0b'};
+function fmt(n){n=Math.round(n);if(n>=1000000)return'$'+(n/1000000).toFixed(2)+'M';return'$'+n.toLocaleString('en-CA');}
+function calcYearly(init,monthly,rate,years){const r=rate/12;let v=init;const pts=[v];for(let y=0;y<years;y++){for(let m=0;m<12;m++)v=v*(1+r)+monthly;pts.push(v);}return pts;}
+function drawChart(datasets,labels){
+  const canvas=document.getElementById('chart');
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.parentElement.clientWidth-24;
+  const H=260;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+  const pad={top:16,right:16,bottom:36,left:62};
+  const cW=W-pad.left-pad.right;const cH=H-pad.top-pad.bottom;
+  const maxV=Math.max(...Object.values(datasets).flat())*1.05;
+  const n=labels.length;
+  function xp(i){return pad.left+(i/(n-1))*cW;}
+  function yp(v){return pad.top+cH-(v/maxV)*cH;}
+  for(let i=0;i<=4;i++){
+    const y=pad.top+(cH/4)*i;const v=maxV*(1-i/4);
+    ctx.strokeStyle='#1e1e3a';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(pad.left+cW,y);ctx.stroke();
+    ctx.fillStyle='#555';ctx.font='10px sans-serif';ctx.textAlign='right';
+    ctx.fillText(v>=1000000?'$'+(v/1000000).toFixed(1)+'M':'$'+Math.round(v/1000)+'k',pad.left-5,y+4);
+  }
+  ctx.fillStyle='#555';ctx.textAlign='center';
+  const step=Math.ceil(n/5);
+  labels.forEach((l,i)=>{if(i%step===0||i===n-1)ctx.fillText(l,xp(i),H-8);});
+  Object.entries(datasets).forEach(([key,pts])=>{
+    const color=COLORS[key];
+    const grad=ctx.createLinearGradient(0,pad.top,0,pad.top+cH);
+    grad.addColorStop(0,color+'55');grad.addColorStop(1,color+'00');
+    ctx.beginPath();
+    pts.forEach((v,i)=>i===0?ctx.moveTo(xp(i),yp(v)):ctx.lineTo(xp(i),yp(v)));
+    ctx.lineTo(xp(n-1),pad.top+cH);ctx.lineTo(xp(0),pad.top+cH);ctx.closePath();
+    ctx.fillStyle=grad;ctx.fill();
+    ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';
+    pts.forEach((v,i)=>i===0?ctx.moveTo(xp(i),yp(v)):ctx.lineTo(xp(i),yp(v)));
+    ctx.stroke();
+  });
+}
+function update(){
+  const init=+document.getElementById('initial').value;
+  const monthly=+document.getElementById('monthly').value;
+  const years=+document.getElementById('years').value;
+  const totalContrib=init+monthly*12*years;
+  const yearly={};
+  Object.keys(RATES).forEach(k=>yearly[k]=calcYearly(init,monthly,RATES[k],years));
+  const finals={};
+  Object.keys(RATES).forEach(k=>finals[k]=yearly[k][years]);
+  Object.keys(RATES).forEach(k=>{
+    const gain=finals[k]-totalContrib;
+    document.getElementById('val-'+k).textContent=fmt(finals[k]);
+    document.getElementById('gain-'+k).textContent='+'+fmt(gain)+' gain';
+    document.getElementById('pct-'+k).textContent=((gain/totalContrib)*100).toFixed(0)+'% return on contributions';
+  });
+  document.getElementById('gap-xgro').textContent=fmt(finals.xeqt-finals.xgro);
+  document.getElementById('gap-xbal').textContent=fmt(finals.xeqt-finals.xbal);
+  document.getElementById('contributed').textContent=fmt(totalContrib);
+  Object.keys(RATES).forEach(k=>document.getElementById('mg-'+k).textContent='+'+fmt(finals[k]-totalContrib));
+  const gap=finals.xeqt-finals.xbal;
+  const yrs=Math.round(gap/(monthly*12));
+  document.getElementById('takeaway').innerHTML=
+    'Over '+years+' years, choosing XBAL instead of XEQT costs you roughly <strong style="color:#f59e0b">'+fmt(gap)+'</strong> in compounding. That\'s about <strong style="color:#fff">'+yrs+' year'+(yrs!==1?'s':'')+' worth of contributions</strong> left on the table. For long-term investors who can handle volatility, XEQT is the stronger choice.';
+  document.getElementById('chart-title').textContent='Portfolio Growth Over '+years+' Years';
+  const labels=Array.from({length:years+1},(_,i)=>i===0?'Start':'Yr '+i);
+  drawChart(yearly,labels);
+}
+window.addEventListener('resize',update);
+window.addEventListener('load',update);
+</script>
+</body>
+</html>
